@@ -35,13 +35,23 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+void WHO_AM_I(void);
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+//x
+uint8_t byte1;
+uint8_t byte2;
+int16_t x;
+int16_t x_dir = 0;
+
+//y
+uint8_t y_byte1;
+uint8_t y_byte2;
+int16_t y;
+int16_t y_dir = 0;
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,39 +72,360 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
+	__HAL_RCC_GPIOC_CLK_ENABLE(); // Enable the GPIOC clock in the RCC
+  __HAL_RCC_GPIOB_CLK_ENABLE(); // Enable the GPIOB clock in the RCC
+	__HAL_RCC_I2C2_CLK_ENABLE();
+	
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
+	
+	// Set LEDS
+	GPIO_InitTypeDef initStr1 = {GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_0,
+															 GPIO_MODE_OUTPUT_PP,
+															 GPIO_SPEED_FREQ_LOW,
+															 GPIO_NOPULL};
+	
+	HAL_GPIO_Init(GPIOC, &initStr1); // Initialize pins 
+	
+	// Setting the GPIO Modes:  
+	GPIOB->OTYPER = (1 << 11) | (1 << 13);	// Open Drain on PB11 and PB13
+	GPIOB->MODER = (1 << 23) | (1 << 27) | (1 << 28);	// Mode 
+	GPIOB->AFR[1] = (1 << 12) | (1 << 22) | (1 << 20); 
+	
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Start PB14 high
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET); // Start PC0 high
+	
+	// Initializing the I2C Peripheral
+	I2C2->TIMINGR = 0x10420F13;
+	I2C2->CR1 = 1; // PE bit
+	
+	// Part1: WHO AM I Function
+	//WHO_AM_I();
+	//while (1){}
+			
+	// Set the STOP bit in the CR2 register to release the I2C bus
+	//I2C2-> CR2 |= (1 << 14);
+															 
+	// Initializing Gryoscope: 
+	
+	// Enable the X and Y sensing axes in the CTRL_REG1 register
+	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+	I2C2->CR2 |= (2 << 16) | (0x69 << 1);		// Setting NBytes and Slave Address
+	I2C2->CR2 &= ~(0x400);  // Clear RD_WRN to write transfer
+	I2C2->CR2 |= (1 << 13);	// Start Bit 
 
-  /* USER CODE BEGIN SysInit */
+	// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+	}
+	
+	//Write the address of the CN register into the I2C transmit register. (TXDR)
+	I2C2->TXDR = 0x20; 
+	
+	// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
+				break; 
+		}
+	}
+	
+	I2C2->TXDR = 0x0B;
+	
+	//Wait until the TC (Transfer Complete) flag is set
+	while(1){
+		if((I2C2->ISR & (1 << 6))){
+				break; 
+		}
+	}
 
-  /* USER CODE END SysInit */
+		
+	// Set the STOP bit in the CR2 register to release the I2C bus
+	I2C2-> CR2 |= (1 << 14);
+	
+	while (1){		
+		
+		
+		///////////////// Starting X axis /////////////////
+		
+		// Enable the X and Y sensing axes in the CTRL_REG1 register
+		I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+		I2C2->CR2 |= (1 << 16) | (0x69 << 1);		// Setting NBytes and Slave Address
+		I2C2->CR2 &= ~(0x400);  // Clear RD_WRN to write transfer
+		I2C2->CR2 |= (1 << 13);	// Start Bit 
+		
+		// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+		while(1){
+			
+			// TXIS
+			if((I2C2->ISR & (1 << 1))){
+				I2C2->TXDR = 0xA8;
+				break;
+			}
+			
+			// NACKF
+			if((I2C2->ISR & (1 << 4))){
+				//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+			
+		}
+		
+		//Wait until the TC (Transfer Complete) flag is set
+		while(1){
+			if((I2C2->ISR & (1 << 6))){
+				break; 
+			}
+		}
+		
+		
+		// Reload the CR2 register with the same parameters as before, but set the RD_WRN bit to
+		// indicate a read operation.	
+	
+		I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+		I2C2->CR2 |= (2 << 16) | (0x69 << 1) | (1 << 10);		
+		I2C2->CR2 |= (1 << 13); // Start Bit
+		
+		// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+		while (1)
+		{
+			// RXNE 
+			if((I2C2->ISR & (1 << 2))){
+				byte1 = I2C2->RXDR; 
+				break; 
+			}
+			
+			// NACKF
+			if((I2C2->ISR & (1 << 4))){
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); 
+			}
+			
+		}
+		
+		// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+		while (1)
+		{
+			
+			// RXNE
+			if((I2C2->ISR & (1 << 2))){
+				byte2 = I2C2->RXDR; 
+				break; 
+			}
+			
+			// NACKF
+			if((I2C2->ISR & (1 << 4))){
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
+			}
+			
+		}
+	
+		//Wait until the TC (Transfer Complete) flag is set
+		while(1){
+			if((I2C2->ISR & (1 << 6))){
+				break; 
+			}
+		}
+		
+		// Set the STOP bit in the CR2 register to release the I2C bus
+		I2C2-> CR2 |= (1 << 14);
+		
+		x = (byte2 << 8) | byte1;  
+		
+		x_dir += x;
+		
+		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+		HAL_Delay(100);
+		
+		///////////////// Starting Y axis /////////////////
+		
+		// Enable the X and Y sensing axes in the CTRL_REG1 register
+		I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+		I2C2->CR2 |= (1 << 16) | (0x69 << 1);		// Setting NBytes and Slave Address
+		I2C2->CR2 &= ~(0x400);  // Clear RD_WRN to write transfer
+		I2C2->CR2 |= (1 << 13);	// Start Bit 
+		
+		// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+		while(1){
+			
+			// TXIS
+			if((I2C2->ISR & (1 << 1))){
+				I2C2->TXDR = 0xAA;
+				break;
+			}
+			
+			// NACKF
+			if((I2C2->ISR & (1 << 4))){
+				//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+			
+		}
+		
+		//Wait until the TC (Transfer Complete) flag is set
+		while(1){
+			if((I2C2->ISR & (1 << 6))){
+				break; 
+			}
+		}
+		
+		
+		// Reload the CR2 register with the same parameters as before, but set the RD_WRN bit to
+		// indicate a read operation.	
+	
+		I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+		I2C2->CR2 |= (2 << 16) | (0x69 << 1) | (1 << 10);		
+		I2C2->CR2 |= (1 << 13); // Start Bit
+		
+		// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+		while (1)
+		{
+			// RXNE 
+			if((I2C2->ISR & (1 << 2))){
+				y_byte1 = I2C2->RXDR; 
+				break; 
+			}
+			
+			// NACKF
+			if((I2C2->ISR & (1 << 4))){
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); 
+			}
+			
+		}
+		
+		// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+		while (1)
+		{
+			
+			// RXNE
+			if((I2C2->ISR & (1 << 2))){
+				y_byte2 = I2C2->RXDR; 
+				break; 
+			}
+			
+			// NACKF
+			if((I2C2->ISR & (1 << 4))){
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
+			}
+			
+		}
+	
+		//Wait until the TC (Transfer Complete) flag is set
+		while(1){
+			if((I2C2->ISR & (1 << 6))){
+				break; 
+			}
+		}
+		
+		// Set the STOP bit in the CR2 register to release the I2C bus
+		I2C2-> CR2 |= (1 << 14);
+		
+		y = (y_byte2 << 8) | y_byte1;  
+		
+		y_dir += y;
+		
+		HAL_Delay(100);
+		
+		// X axis 
+		if(x_dir < 0){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);  
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
+		}
+		else{ 
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); 
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET); 
+		}
+		
+		// Y axis 
+		if(y_dir < 0){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); 
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
+		}
+		else{
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); 
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
+		}
+	
+	}
+	
+//	while(1){}
+		
+}
 
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
 
-  /* USER CODE END 2 */
+void WHO_AM_I(void){
+	
+	// Reading the Register 
+	// 1. Set the L3GD20 slave address = 0x69
+	I2C2->CR2 |= (1 << 16) | (0x69 << 1);		
+	I2C2->CR2 &= ~(0x400);
+	I2C2->CR2 |= (1 << 13);	// Start Bit 														 
+	
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
+	// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+	}
+	
+	//Txis flag
+	if(I2C2->ISR & (1 << 1)){
+		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); 
+	}
+	
+	//Write the address of the ?WHO_AM_I? register into the I2C transmit register. (TXDR)
+	I2C2->TXDR = 0x0F; 
+	
+	//Wait until the TC (Transfer Complete) flag is set
+	while(1){
+		if((I2C2->ISR & (1 << 6))){
+			break; 
+		}
+	}
+	
+	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PB14 high
+	
+	// Reload the CR2 register with the same parameters as before, but set the RD_WRN bit to
+  // indicate a read operation.
+	//I2C2->CR2 |= 0;		
+	I2C2->CR2 |= (1 << 16) | (0x69 << 1) | (1 << 10);		
+	I2C2->CR2 |= (1 << 13); // Start Bit
+	
+	// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+	while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
   }
-  /* USER CODE END 3 */
+	
+	if(I2C2->ISR & (1 << 2)){
+		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); 
+	}
+	
+	//Wait until the TC (Transfer Complete) flag is set
+	while(1){
+		if((I2C2->ISR & (1 << 6))){
+			break; 
+		}
+	}
+	
+	// Check the contents of the RXDR register to see if it matches 0xD4. (expected value of the ?WHO_AM_I? register)
+	if(I2C2->RXDR == 0xD3){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+	}
+	
+	// Set the STOP bit in the CR2 register to release the I2C bus
+	I2C2-> CR2 |= (1 << 14);
+	
 }
 
 /**
@@ -166,4 +497,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
