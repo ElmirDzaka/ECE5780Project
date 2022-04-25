@@ -3,6 +3,7 @@
 "finalproject\main.o"
 "finalproject\stm32f0xx_it.o"
 "finalproject\stm32f0xx_hal_msp.o"
+"finalproject\i2c.o"
 "finalproject\stm32f0xx_hal_tim.o"
 "finalproject\stm32f0xx_hal_tim_ex.o"
 "finalproject\stm32f0xx_hal_rcc.o"
