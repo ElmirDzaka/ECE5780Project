@@ -33,20 +33,14 @@
 // MPU6050 structure
 typedef struct
 {
-
+	//ACCL values
     int16_t Accel_X_RAW;
-    int16_t Accel_Y_RAW;
-    int16_t Accel_Z_RAW;
     double Ax;
-    double Ay;
-    double Az;
-
+    
+	//Gyro values
     int16_t Gyro_X_RAW;
-    int16_t Gyro_Y_RAW;
-    int16_t Gyro_Z_RAW;
     double Gx;
-    double Gy;
-    double Gz;
+  
 
 } MPU6050_t;
 

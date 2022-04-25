@@ -434,10 +434,89 @@ void accel_Init(void){
 void read_accel(MPU6050_t *Datastruct){
 	uint8_t Rec_Data[2]; //read 2 bytes of data from accel_Xout_H register (only need x axis)
 	
+	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 &= ~(0x400); //READ_WRN to write
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
 	
 	//combine high bits and low bits of acclerometer H/L registers to get full value
+		
+	// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+	}
 	
+	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+	}
+	
+	//go to gyro read reg
+	I2C2->TXDR =  ACCEL_XOUT_H_REG;//control reg from MPU
+	
+	
+	//Wait until the TC (Transfer Complete) flag is set
+	while(1){
+		if((I2C2->ISR & (1 << 6))){
+				break; 
+		}
+	}
+
+	
+	//read high gyro reg
+	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
+	I2C2->CR2 |= (1<<10); //READ_WRN to READ
+	I2C2->CR2 |= (1 << 13);	// Start Bit 
+	
+	
+	
+	// Wait until either of the RXNE (Recieve Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+	}
+	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+	}
+
+	
+	//get higher 8 bits
+	Rec_Data[0] = I2C2->RXDR;
+	
+	
+	// Wait until either of the RXNE (Recieve Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+	}
+	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+	}
+
+	
+	
+	
+	//get lower 8 bits
+	Rec_Data[1] = I2C2->RXDR;
+
+
+	
+	//combine high bits and low bits of gyroscope H/L registers to get full value
+	Datastruct ->Accel_X_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data[1]);
+	
+	//convert accel since sensitivity is 16384 LSB/g
+	Datastruct->Ax = Datastruct->Accel_X_RAW / 16384.0;
+	
+	//delay just in case
+	HAL_Delay(100);
 }
