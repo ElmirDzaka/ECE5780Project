@@ -1,24 +1,28 @@
-# Project Title
+# Two-Wheel Balancing Robot (Inverted Pendulum) 
 
 Simple overview of use/purpose.
 
-## Description
+## Purpose
 
 An in-depth paragraph about your project and overview of use.
 
-## Getting Started
+## Functionality
 
-### Dependencies
+### Base Requirements Implemented
 
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
+* GPIO
+   * Explain GPIO Here
+* I2C
+   * Explain I2C here 
+* Motor
+   * Explain Motor Here 
 
-### Installing
+### Instructions
 
 * How/where to download your program
 * Any modifications needed to be made to files/folders
 
-### Executing program
+### Materials
 
 * How to run the program
 * Step-by-step bullets
@@ -26,30 +30,28 @@ An in-depth paragraph about your project and overview of use.
 code blocks for commands
 ```
 
-## Help
+### MPU6050
 
 Any advise for common problems or issues.
 ```
 command to run if program contains helper info
 ```
 
-## Authors
+### I2C
 
-Contributors names and contact info
 
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+### Motors
 
-## Version History
+### Making Robot Frame
 
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
+### Combining Components Together
 
-## License
+## Author
 
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
+Elmir Dzaka: (Linkedin?)
+
+## 
+
+
 
 ## Acknowledgments
