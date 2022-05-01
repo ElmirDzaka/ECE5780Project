@@ -46,6 +46,15 @@ command to run if program contains helper info
 
 ### Combining Components Together
 
+## Milestones
+
+Explain how it was changed during the modeling process of the project
+
+* Milestone 1: Getting Who_am_I from MPU6050
+* Milestone 2: Read Values from MPU6050
+* Milestone 3: Get Motors Working Using Correct PWD
+* Milestone 4: Assemble with Robot Frame
+
 ## Author
 
 Elmir Dzaka: (Linkedin?)
