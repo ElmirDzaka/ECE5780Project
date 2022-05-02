@@ -129,7 +129,7 @@ void who_am_i(void){
   }
 	
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); //error
 	}
 	
 	//Wait until the TC (Transfer Complete) flag is set
@@ -153,9 +153,13 @@ void who_am_i(void){
 
 //wake up sensors and set clock to 
 void wake_up_mpu (void){
-	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
+	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 &= ~(0x400); //READ_WRN to write
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
+	
+	
+	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
 	
 	// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
 	while(1){
@@ -164,14 +168,19 @@ void wake_up_mpu (void){
 		}
 	}
 	
+		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
+	
+	//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
 	
 	//write to power reg to enable clock and wake up
 	I2C2->TXDR =  PWR_MGMT_1_REG;//control reg from MPU
+	
+
 	
 	
 		// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
@@ -181,9 +190,11 @@ void wake_up_mpu (void){
 		}
 	}
 	
+		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
+	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error orange
 	}
 	
 	
@@ -193,10 +204,12 @@ void wake_up_mpu (void){
 	//Wait until the TC (Transfer Complete) flag is set
 	while(1){
 		if((I2C2->ISR & (1 << 6))){
+			//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 				break; 
 		}
 	}
-		
+	
+	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); //works
 	
 	// Set the STOP bit in the CR2 register to release the I2C bus
 	I2C2-> CR2 |= (1 << 14);
@@ -206,7 +219,9 @@ void wake_up_mpu (void){
 
 //sets sampling rate of MPU6050
 void sample_rate(void){
-	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
+	
+	//I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 &= ~(0x400); //READ_WRN to write
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
 	
@@ -220,11 +235,12 @@ void sample_rate(void){
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
 	
 	//write to sampling reg to divide 8Mhz clock by 8 to get 1kHZ
 	I2C2->TXDR =  SMPLRT_DIV_REG;//control reg from MPU
+	
 	
 	
 		// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
@@ -236,7 +252,7 @@ void sample_rate(void){
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
 	
 	//set sampling rate to 1kHZ
@@ -245,6 +261,7 @@ void sample_rate(void){
 	//Wait until the TC (Transfer Complete) flag is set
 	while(1){
 		if((I2C2->ISR & (1 << 6))){
+			//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 				break; 
 		}
 	}
@@ -263,7 +280,7 @@ void gyro_Init(void){
 	
 	
 //	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
-	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
+	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 &= ~(0x400); //READ_WRN to write
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
 	
@@ -277,13 +294,15 @@ void gyro_Init(void){
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
 	
 	
 	
 	//enable gyro config register  from MPU
 	I2C2->TXDR =  GYRO_CONFIG_REG;//control reg from MPU
+	
+
 	
 	// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
 	while(1){
@@ -294,9 +313,10 @@ void gyro_Init(void){
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
 	
+
 	
 	//set range to 
 	I2C2->TXDR =  0x00; // sets +- 250 degrees/s for gyro
@@ -304,6 +324,7 @@ void gyro_Init(void){
 	//Wait until the TC (Transfer Complete) flag is set
 	while(1){
 		if((I2C2->ISR & (1 << 6))){
+			//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 				break; 
 		}
 	}
@@ -336,16 +357,17 @@ void read_gyro(MPU6050_t *Datastruct){
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
 	
-	//go to gyro read reg
+	//go to gyro high read reg
 	I2C2->TXDR =  GYRO_XOUT_H_REG;//control reg from MPU
 	
 	
 	//Wait until the TC (Transfer Complete) flag is set
 	while(1){
 		if((I2C2->ISR & (1 << 6))){
+				//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 				break; 
 		}
 	}
@@ -358,49 +380,66 @@ void read_gyro(MPU6050_t *Datastruct){
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
 	
 	
+	// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+	while (1)
+	{
+		// RXNE 
+		if((I2C2->ISR & (1 << 2))){
+			Rec_Data[0] = I2C2->RXDR; //high bits
+			break; 
+		}
+			
+		// NACKF
+		if((I2C2->ISR & (1 << 4))){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); 
+		}
+			
+	}
+		
+	// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+	while (1)
+	{
+			
+		// RXNE
+		if((I2C2->ISR & (1 << 2))){
+			Rec_Data[1] = I2C2->RXDR; //low bits
+			break; 
+		}
+			
+		// NACKF
+		if((I2C2->ISR & (1 << 4))){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); 
+		}
+			
+	}
 	
-	// Wait until either of the RXNE (Recieve Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	//Wait until the TC (Transfer Complete) flag is set
 	while(1){
-		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
+		if((I2C2->ISR & (1 << 6))){
+		//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 			break; 
 		}
 	}
 	
-	//NACKF flag
-	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
-	}
+	
 
-	
-	//get higher 8 bits
-	Rec_Data[0] = I2C2->RXDR;
-	
-	
-	// Wait until either of the RXNE (Recieve Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
-	while(1){
-		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
-			break; 
-		}
-	}
-	
-	//NACKF flag
-	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
-	}
-
-	
-	
-	
-	//get lower 8 bits
-	Rec_Data[1] = I2C2->RXDR;
-
-
+	// Set the STOP bit in the CR2 register to release the I2C bus
+	I2C2-> CR2 |= (1 << 14);
 	
 	//combine high bits and low bits of gyroscope H/L registers to get full value
 	Datastruct ->Gyro_X_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data[1]);
 	
 	//convert gyroscope degrees  to (250 degrees/s) since sensitivity is 131 LSB/degree/s
 	Datastruct->Gx = Datastruct->Gyro_X_RAW / 131.0;
+	
+	if (Datastruct->Gx <= 0){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); //red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); //blue
+	}
+	else{
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); //blue
+	}
 	
 	//delay just in case
 	HAL_Delay(100);
@@ -409,8 +448,8 @@ void read_gyro(MPU6050_t *Datastruct){
 
 
 void accel_Init(void){
-	
-		I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
+	//	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+		I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 		I2C2->CR2 &= ~(0x400); //READ_WRN to write
 		I2C2->CR2 |= (1 << 13);	// Start Bit 
 	
@@ -430,6 +469,18 @@ void accel_Init(void){
 		//enable gyro config register  from MPU
 		I2C2->TXDR = ACCEL_CONFIG_REG;//control reg from MPU
 		
+		//Wait until the TC (Transfer Complete) flag is set
+	//	while(1){
+		//	if((I2C2->ISR & (1 << 6))){
+	//			break; 
+	//		}
+		
+	//	}
+	
+	//	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
+	//	I2C2->CR2 &= ~(0x400); //READ_WRN to write
+	//	I2C2->CR2 |= (1 << 13);	// Start Bit 
+		
 		
 		// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
 		while(1){
@@ -445,6 +496,19 @@ void accel_Init(void){
 		
 		//set range to 
 		I2C2->TXDR =  0x00; // sets +- 2g degrees/s for gyro
+		
+		//Wait until the TC (Transfer Complete) flag is set
+		while(1){
+			if((I2C2->ISR & (1 << 6))){
+				//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+				break; 
+			}
+		}
+
+		
+	
+		// Set the STOP bit in the CR2 register to release the I2C bus
+		I2C2-> CR2 |= (1 << 14);
 	
 	
 	
@@ -470,10 +534,10 @@ void read_accel(MPU6050_t *Datastruct){
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); //error red
 	}
 	
-	//go to gyro read reg
+	//go to accel read reg
 	I2C2->TXDR =  ACCEL_XOUT_H_REG;//control reg from MPU
 	
 	
@@ -485,7 +549,7 @@ void read_accel(MPU6050_t *Datastruct){
 	}
 
 	
-	//read high gyro reg
+	//read high accel reg
 	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 |= (1<<10); //READ_WRN to READ
@@ -493,48 +557,65 @@ void read_accel(MPU6050_t *Datastruct){
 	
 	
 	
-	// Wait until either of the RXNE (Recieve Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+	while (1)
+	{
+		// RXNE 
+		if((I2C2->ISR & (1 << 2))){
+			Rec_Data[0] = I2C2->RXDR; //high bits
+			break; 
+		}
+			
+		// NACKF
+		if((I2C2->ISR & (1 << 4))){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); 
+		}
+			
+	}
+		
+	// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+	while (1)
+	{
+			
+		// RXNE
+		if((I2C2->ISR & (1 << 2))){
+			Rec_Data[1] = I2C2->RXDR; //low bits
+			break; 
+		}
+			
+		// NACKF
+		if((I2C2->ISR & (1 << 4))){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); 
+		}
+			
+	}
+	
+	//Wait until the TC (Transfer Complete) flag is set
 	while(1){
-		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
+		if((I2C2->ISR & (1 << 6))){
+		//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 			break; 
 		}
 	}
 	
-	//NACKF flag
-	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
-	}
-
 	
-	//get higher 8 bits
-	Rec_Data[0] = I2C2->RXDR;
+	// Set the STOP bit in the CR2 register to release the I2C bus
+	I2C2-> CR2 |= (1 << 14);
 	
-	
-	// Wait until either of the RXNE (Recieve Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
-	while(1){
-		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
-			break; 
-		}
-	}
-	
-	//NACKF flag
-	if(I2C2->ISR & (1 << 4)){
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
-	}
-
-	
-	
-	
-	//get lower 8 bits
-	Rec_Data[1] = I2C2->RXDR;
-
-
-	
-	//combine high bits and low bits of gyroscope H/L registers to get full value
+	//combine high bits and low bits of accel H/L registers to get full value
 	Datastruct ->Accel_X_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data[1]);
 	
 	//convert accel since sensitivity is 16384 LSB/g
 	Datastruct->Ax = Datastruct->Accel_X_RAW / 16384.0;
+	
+	if (Datastruct->Ax <= 0){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET); //red
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); //blue
+	}
+	else{
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET); //blue
+	}
 	
 	//delay just in case
 	HAL_Delay(100);

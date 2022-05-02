@@ -77,11 +77,11 @@ int main(void)
 	
   /* USER CODE BEGIN Init */
 	I2C2_init();
-	who_am_i();
-	//wake_up_mpu();
-	//sample_rate();
-	//gyro_Init();
-	//accel_Init();
+	//who_am_i();
+	wake_up_mpu();
+	sample_rate();
+	gyro_Init();
+	accel_Init();
 	
   /* USER CODE END Init */
 
@@ -91,8 +91,8 @@ int main(void)
 	
 	
 	while(1){
-	//	read_gyro(&MPU6050);
-	//	read_accel(&MPU6050);
+		read_gyro(&MPU6050);
+		read_accel(&MPU6050);
 	
 	}
 		
