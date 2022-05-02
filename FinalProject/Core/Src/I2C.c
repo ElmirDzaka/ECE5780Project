@@ -181,6 +181,11 @@ void wake_up_mpu (void){
 		}
 	}
 	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+	}
+	
 	
 	//set value to to wake up, clock=8MHZ
 	I2C2->TXDR =  0x00; 
@@ -229,6 +234,10 @@ void sample_rate(void){
 		}
 	}
 	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
+	}
 	
 	//set sampling rate to 1kHZ
 	I2C2->TXDR =  0x07; 
@@ -281,6 +290,11 @@ void gyro_Init(void){
 		if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
 				break; 
 		}
+	}
+	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
 	}
 	
 	
@@ -422,6 +436,11 @@ void accel_Init(void){
 			if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
 					break; 
 			}
+		}
+		
+		//NACKF flag
+		if(I2C2->ISR & (1 << 4)){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); //error red
 		}
 		
 		//set range to 

@@ -29,3 +29,6 @@ finalproject\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h
 finalproject\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h
 finalproject\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h
 finalproject\main.o: ../Core/Inc/I2C.h
+finalproject\main.o: ../Core/Inc/motor.h
+finalproject\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+finalproject\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
