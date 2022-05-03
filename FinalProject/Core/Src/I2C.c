@@ -27,9 +27,9 @@
 #define PWR_MGMT_1_REG 0x6B
 #define SMPLRT_DIV_REG 0x19
 #define ACCEL_CONFIG_REG 0x1C
-#define ACCEL_XOUT_H_REG 0x3B
+#define ACCEL_YOUT_H_REG 0x3D
 #define GYRO_CONFIG_REG 0x1B
-#define GYRO_XOUT_H_REG 0x43
+#define GYRO_YOUT_H_REG 0x45
 #define GYRO_XOUT_L_REG 0x44
 
 // Address of who_am_I addresss
@@ -39,10 +39,7 @@
 
 void I2C2_init(void){
 	
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
+  //initialize pins
 	GPIOB->MODER |= (1<<23) | (1 <<27) | (1<<28) ; //Pin PB11 and PB13 and PB14 (output mode)
 	GPIOC->MODER |= (1<<0); //PC0 (output mode)
 	GPIOB->OTYPER |= (1<<11) | (1<<13); //open drain PB11 and PB13
@@ -98,7 +95,6 @@ void who_am_i(void){
 		
 	}
 	
-	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PB14 high
 	
 	// Reload the CR2 register with the same parameters as before, but set the RD_WRN bit to
   // indicate a read operation.
@@ -137,7 +133,7 @@ void who_am_i(void){
 };
 
 
-//wake up sensors and set clock to 
+//wake up sensors and set clock to 8 MHZ
 void wake_up_mpu (void){
 	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
@@ -154,7 +150,7 @@ void wake_up_mpu (void){
 		}
 	}
 	
-		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); 
+		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); /*NOTE all commented out green LEDs used for testing if data was recieved/sent correctly through I2C */
 	
 	//NACKF flag
 	if(I2C2->ISR & (1 << 4)){
@@ -206,7 +202,6 @@ void wake_up_mpu (void){
 //sets sampling rate of MPU6050
 void sample_rate(void){
 	
-	//I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 &= ~(0x400); //READ_WRN to write
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
@@ -264,8 +259,6 @@ void sample_rate(void){
 
 void gyro_Init(void){
 	
-	
-//	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 	I2C2->CR2 &= ~(0x400); //READ_WRN to write
 	I2C2->CR2 |= (1 << 13);	// Start Bit 
@@ -324,8 +317,8 @@ void gyro_Init(void){
 
 };
 
-void read_gyro(MPU6050_t *Datastruct){
-	uint8_t Rec_Data[2]; //read 2 bytes of data from Gyro_Xout_H register (only need x axis)
+void read_gyro(MPU6050_t *mpu_struct){
+	uint8_t data[2]; //read 2 bytes of data from Gyro_Xout_H register (only need x axis)
 	
 	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
@@ -347,7 +340,7 @@ void read_gyro(MPU6050_t *Datastruct){
 	}
 	
 	//go to gyro high read reg
-	I2C2->TXDR =  GYRO_XOUT_H_REG;//control reg from MPU
+	I2C2->TXDR =  GYRO_YOUT_H_REG;//control reg from MPU
 	
 	
 	//Wait until the TC (Transfer Complete) flag is set
@@ -371,7 +364,7 @@ void read_gyro(MPU6050_t *Datastruct){
 	{
 		// RXNE 
 		if((I2C2->ISR & (1 << 2))){
-			Rec_Data[0] = I2C2->RXDR; //high bits
+			data[0] = I2C2->RXDR; //high bits
 			break; 
 		}
 			
@@ -388,7 +381,7 @@ void read_gyro(MPU6050_t *Datastruct){
 			
 		// RXNE
 		if((I2C2->ISR & (1 << 2))){
-			Rec_Data[1] = I2C2->RXDR; //low bits
+			data[1] = I2C2->RXDR; //low bits
 			break; 
 		}
 			
@@ -413,12 +406,13 @@ void read_gyro(MPU6050_t *Datastruct){
 	I2C2-> CR2 |= (1 << 14);
 	
 	//combine high bits and low bits of gyroscope H/L registers to get full value
-	Datastruct ->Gyro_X_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data[1]);
+	mpu_struct ->Gyro_Y = (int16_t)(data[0] << 8 | data[1]);
 	
 	//convert gyroscope degrees  to (250 degrees/s) since sensitivity is 131 LSB/degree/s
-	Datastruct->Gx = Datastruct->Gyro_X_RAW / 131.0;
+	mpu_struct->Gy = mpu_struct->Gyro_Y / 131.0;
 	
-	if (Datastruct->Gx <= 0){
+	//turn LEDS on based on gyroscope orientation
+	if (mpu_struct->Gy <= 0){
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); //red
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); //blue
 	}
@@ -434,7 +428,7 @@ void read_gyro(MPU6050_t *Datastruct){
 
 
 void accel_Init(void){
-	//	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
+	
 		I2C2->CR2 |= (2<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
 		I2C2->CR2 &= ~(0x400); //READ_WRN to write
 		I2C2->CR2 |= (1 << 13);	// Start Bit 
@@ -455,17 +449,7 @@ void accel_Init(void){
 		//enable gyro config register  from MPU
 		I2C2->TXDR = ACCEL_CONFIG_REG;//control reg from MPU
 		
-		//Wait until the TC (Transfer Complete) flag is set
-	//	while(1){
-		//	if((I2C2->ISR & (1 << 6))){
-	//			break; 
-	//		}
-		
-	//	}
 	
-	//	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
-	//	I2C2->CR2 &= ~(0x400); //READ_WRN to write
-	//	I2C2->CR2 |= (1 << 13);	// Start Bit 
 		
 		
 		// Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
@@ -500,8 +484,8 @@ void accel_Init(void){
 	
 };
 
-void read_accel(MPU6050_t *Datastruct){
-	uint8_t Rec_Data[2]; //read 2 bytes of data from accel_Xout_H register (only need x axis)
+void read_accel(MPU6050_t *mpu_struct){
+	uint8_t data[2]; //read 2 bytes of data from accel_Xout_H register (only need x axis)
 	
 	I2C2->CR2 &= ~((0x7F << 16) | (0x3FF << 0));
 	I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave ADDress of MPU6050
@@ -524,7 +508,7 @@ void read_accel(MPU6050_t *Datastruct){
 	}
 	
 	//go to accel read reg
-	I2C2->TXDR =  ACCEL_XOUT_H_REG;//control reg from MPU
+	I2C2->TXDR =  ACCEL_YOUT_H_REG;//control reg from MPU
 	
 	
 	//Wait until the TC (Transfer Complete) flag is set
@@ -548,7 +532,7 @@ void read_accel(MPU6050_t *Datastruct){
 	{
 		// RXNE 
 		if((I2C2->ISR & (1 << 2))){
-			Rec_Data[0] = I2C2->RXDR; //high bits
+			data[0] = I2C2->RXDR; //high bits
 			break; 
 		}
 			
@@ -565,7 +549,7 @@ void read_accel(MPU6050_t *Datastruct){
 			
 		// RXNE
 		if((I2C2->ISR & (1 << 2))){
-			Rec_Data[1] = I2C2->RXDR; //low bits
+			data[1] = I2C2->RXDR; //low bits
 			break; 
 		}
 			
@@ -589,12 +573,13 @@ void read_accel(MPU6050_t *Datastruct){
 	I2C2-> CR2 |= (1 << 14);
 	
 	//combine high bits and low bits of accel H/L registers to get full value
-	Datastruct ->Accel_X_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data[1]);
+	mpu_struct ->Accel_Y = (int16_t)(data[0] << 8 | data[1]);
 	
 	//convert accel since sensitivity is 16384 LSB/g
-	Datastruct->Ax = Datastruct->Accel_X_RAW / 16384.0;
+	mpu_struct->Ay = mpu_struct->Accel_Y / 16384.0;
 	
-	if (Datastruct->Ax <= 0){
+	//turn LEDS on based on acceleration from MPU
+	if (mpu_struct->Ay <= 0){
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET); //red
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); //blue
 	}

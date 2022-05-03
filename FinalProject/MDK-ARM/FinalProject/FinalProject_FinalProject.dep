@@ -1,7 +1,7 @@
 Dependencies for Project 'FinalProject', Target 'FinalProject': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
 F (startup_stm32f072xb.s)(0x624252E5)(--cpu Cortex-M0 --pd "__EVAL SETA 1" -g --apcs=interwork -I.\RTE\_FinalProject-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include"--pd "__UVISION_VERSION SETA 536" --pd "_RTE_ SETA 1" --pd "STM32F072xB SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32f072xb.lst --xref -o finalproject\startup_stm32f072xb.o --depend finalproject\startup_stm32f072xb.d)
-F (../Core/Src/main.c)(0x62709844)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FinalProject-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F072xB -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F072xB-o finalproject\main.o --omf_browse finalproject\main.crf --depend finalproject\main.d)
+F (../Core/Src/main.c)(0x62709F4A)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FinalProject-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F072xB -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F072xB-o finalproject\main.o --omf_browse finalproject\main.crf --depend finalproject\main.d)
 I (../Core/Inc/main.h)(0x624252E2)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h)(0x61FD5E72)
 I (../Core/Inc/stm32f0xx_hal_conf.h)(0x624252E2)
@@ -30,7 +30,7 @@ I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c.h)(0x61FD5E72)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h)(0x61FD5E72)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h)(0x61FD5E72)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h)(0x61FD5E72)
-I (../Core/Inc/I2C.h)(0x62672B28)
+I (../Core/Inc/I2C.h)(0x62709E29)
 I (../Core/Inc/motor.h)(0x624716A6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x6025F664)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x6025F664)
@@ -93,9 +93,8 @@ I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c.h)(0x61FD5E72)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h)(0x61FD5E72)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h)(0x61FD5E72)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h)(0x61FD5E72)
-F (..\Core\Src\I2C.c)(0x62704A7C)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FinalProject-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F072xB -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F072xB-o finalproject\i2c.o --omf_browse finalproject\i2c.crf --depend finalproject\i2c.d)
-I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x6025F668)
-I (../Core/Inc/I2C.h)(0x62672B28)
+F (..\Core\Src\I2C.c)(0x6270A12D)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FinalProject-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"C:\Users\Elmir Dzaka\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F072xB -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F072xB-o finalproject\i2c.o --omf_browse finalproject\i2c.crf --depend finalproject\i2c.d)
+I (../Core/Inc/I2C.h)(0x62709E29)
 I (../Core/Inc/main.h)(0x624252E2)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h)(0x61FD5E72)
 I (../Core/Inc/stm32f0xx_hal_conf.h)(0x624252E2)

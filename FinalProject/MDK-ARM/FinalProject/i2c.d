@@ -1,5 +1,4 @@
 finalproject\i2c.o: ..\Core\Src\I2C.c
-finalproject\i2c.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 finalproject\i2c.o: ../Core/Inc/I2C.h
 finalproject\i2c.o: ../Core/Inc/main.h
 finalproject\i2c.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h

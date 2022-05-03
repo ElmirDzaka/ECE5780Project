@@ -98,16 +98,16 @@ int main(void)
 		read_gyro(&MPU6050);
 		read_accel(&MPU6050);
 		
-		if(MPU6050.Gx > 0 && MPU6050.Ax > 0){  //if robot is leaning forward and accelerating, rotate motors backward to correct
+		if(MPU6050.Gy > 0 && MPU6050.Ay > 0){  //if robot is leaning forward and accelerating, rotate motors backward to correct
 			target_rpm = -50;
 		}
-		else if (MPU6050.Gx < 0 && MPU6050.Ax > 0){ //if robot is leaning backwards and accelerrating, rotate motors forward to correct
+		else if (MPU6050.Gy < 0 && MPU6050.Ay > 0){ //if robot is leaning backwards and accelerrating, rotate motors forward to correct
 			target_rpm = 50;
 		}
-		else if (MPU6050.Gx > 0 && MPU6050.Ax < 0){ //if robot is leaning backwards and slowing down, rotate motors backward slowly
+		else if (MPU6050.Gy > 0 && MPU6050.Ay < 0){ //if robot is leaning backwards and slowing down, rotate motors backward slowly
 			target_rpm = -25;
 		}
-		else if (MPU6050.Gx < 0 && MPU6050.Ax < 0){ //if robot is leaning backwards and slowing down, rotate motors forward slowly
+		else if (MPU6050.Gy < 0 && MPU6050.Ay < 0){ //if robot is leaning backwards and slowing down, rotate motors forward slowly
 			target_rpm = 25;
 		}
 		
