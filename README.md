@@ -1,22 +1,29 @@
 # Two-Wheel Balancing Robot (Inverted Pendulum) 
 
-This Project combines an Accelerometer and Gyroscope with an STM32 microcontroller to implement an inverted pendulum in the form of a balancing robot. The robot takes in accelerometer and gyroscope values continuously based on a sampling rate, and feeds the values into a PID motor class. The motor class deciphers the values and spins the motors accordingly to keep the robot balanced. The accelerometer and gyroscope come with an external MPU that interfaces with the STM32 using I2C protocol to send values appropriately.
+## Overview
+This Project combines an accelerometer and gyroscope with an STM32 microcontroller to implement an inverted pendulum in the form of a balancing robot. The robot is implemented by taking in accelerometer and gyroscope values continuously based on a sampling rate. The sensor values are generated from an external MPU chip that contains a gyroscope and accelerometer. This chip interfaces with a STM32 microcontroller using I2C protocol. This protocal ensures that values are from the MPU are sent to the at the proper time that the STM32 asks for. 
+
+Once the values are recieved, the STM32 sends the values to a PID class that rotates the motors (wheels) of the robot based on the values from the MPU. The values recieved from the gyroscope determine the angle of the robot while the values recieved from the accelerometer determine the rate of acceeleration of the robot. These values combined help the motors keep the robot stabalized. A diagram showing a brief overview of the project can be seen below. For a more detailed look through the project, check out the Instructions sections for further information.
+
+//diagram here
 
 ## Purpose
-The purpose of the project is....
+The purpose of the project is to learn how to use I2C and PIDs by integrating an external MPU chip containing a gyroscope and accelerometer sensor. Learning I2C protocol is done by interfacing an external MPU containing two sensors with an STM32 microcontroller. Learning PIDs is done by learning PID and ADC logic so that it can be adapted for this project. combining these learning objectives together allows for the construction of a balancing robot if implemented correctly.
 
 ## Functionality
 
-The functionality of the project is...
+The functionality of the robot is a bit awkward with the materials used in this project. In it's current state, the robot takes in values from an MPU that sits on a balanced frame. Once moving, the robot tries to stay balanced as it is moving forward. With the given materials, there is a small limitation to the robot. This project uses two custom motor drivers that were designed for an encoded Pollolu Motor. The motor drivers take in a wired barrel connection from an AC adapter, limiting the robot to a wired connection. If you are interested in designing this robot with a wireless/barrel-less power connection (power from STM, AD2, etc via breadboard), then consider using a standard L298N motor driver [such as this one](https://www.amazon.com/Qunqi-Controller-Module-Stepper-Arduino/dp/B014KMHSW6/ref=asc_df_B014KMHSW6/?tag=hyprod-20&linkCode=df0&hvadid=167139094796&hvpos=&hvnetw=g&hvrand=3649658821866149140&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9029767&hvtargid=pla-306436938191&psc=1). This motor driver can be wired via breadboard, minimizing wires and clutter, as well as having the capability of connecting with other motors. More ideas can be found in the Additional Ideas section.
+
 
 ## Base Requirements Implemented
 
 * GPIO
-   * Explain GPIO Here
+   * GPIO pins are a vital part of integrating the STM32 with all the other hardware components in the project.
 * I2C
    * Explain I2C here 
 * Motor
-   * Explain Motor Here 
+   * The motor lab is...
+   * The motor lab includes the analog lab since it uses an ADC (Analog to Digital Converter)...  
 * Analog ??
    * Explain sampling rate calulations done for the gyroscope and accelerometer 
 
@@ -41,6 +48,10 @@ command to run if program contains helper info
 
 ### I2C
 
+<img width="300" alt="initialize" src="https://user-images.githubusercontent.com/43626153/166521463-8f9dc8c4-467b-4fcd-9ee5-442a0a43e53b.png">
+<img width="300" alt="read values" src="https://user-images.githubusercontent.com/43626153/166521635-eb9770c8-9775-45fb-9cb3-08797ee0931f.png">
+
+
 
 ### Motors
 
@@ -61,7 +72,7 @@ Explain how it was changed during the modeling process of the project
 
 Elmir Dzaka: (Linkedin?)
 
-## 
+## Additional Ideas 
 
 
 
