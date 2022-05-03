@@ -45,6 +45,7 @@
 
 /* USER CODE BEGIN PV */
 MPU6050_t MPU6050;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,15 +74,17 @@ int main(void)
   HAL_Init();
 	__HAL_RCC_GPIOC_CLK_ENABLE(); // Enable the GPIOC clock in the RCC
   __HAL_RCC_GPIOB_CLK_ENABLE(); // Enable the GPIOB clock in the RCC
-	__HAL_RCC_I2C2_CLK_ENABLE();
+	__HAL_RCC_I2C2_CLK_ENABLE(); //enable i2c2 clk
 	
   /* USER CODE BEGIN Init */
 	I2C2_init();
-	//who_am_i();
-	wake_up_mpu();
+	//who_am_i(); //comment out, used to test if device is correctly reachables
+	wake_up_mpu(); 
 	sample_rate();
 	gyro_Init();
 	accel_Init();
+	
+	motor_init();
 	
   /* USER CODE END Init */
 
@@ -90,9 +93,24 @@ int main(void)
 	
 	
 	
+	
 	while(1){
 		read_gyro(&MPU6050);
 		read_accel(&MPU6050);
+		
+		if(MPU6050.Gx > 0 && MPU6050.Ax > 0){  //if robot is leaning forward and accelerating, rotate motors backward to correct
+			target_rpm = -50;
+		}
+		else if (MPU6050.Gx < 0 && MPU6050.Ax > 0){ //if robot is leaning backwards and accelerrating, rotate motors forward to correct
+			target_rpm = 50;
+		}
+		else if (MPU6050.Gx > 0 && MPU6050.Ax < 0){ //if robot is leaning backwards and slowing down, rotate motors backward slowly
+			target_rpm = -25;
+		}
+		else if (MPU6050.Gx < 0 && MPU6050.Ax < 0){ //if robot is leaning backwards and slowing down, rotate motors forward slowly
+			target_rpm = 25;
+		}
+		
 	
 	}
 		

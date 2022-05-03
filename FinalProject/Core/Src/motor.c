@@ -159,7 +159,7 @@ void PI_update(void) {
      */
     
     /// TODO: calculate error signal and write to "error" variable
-		error = target_rpm * 2.4 - motor_speed;
+		error = target_rpm * 45 - motor_speed;
     
     /* Hint: Remember that your calculated motor speed may not be directly in RPM!
      *       You will need to convert the target or encoder speeds to the same units.
