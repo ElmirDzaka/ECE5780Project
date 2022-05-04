@@ -22,8 +22,8 @@ The functionality of the robot is a bit awkward with the materials used in this 
 
 ### I2C 
 * I2C protocol is critical to having the robot work. I2C allows the STM32F0 to act as a "master" device that takes in values from a "slave" device, which in this case is the MPU. I2C is configurable using the high-level interface provided by the I2C peripheral in the STM32F0 device peripherals. The STM32F0 device peripheral mitigates the bus complexity of the I2C protocol by accessing and configuirng registers to do what you need. The I2C protocol uses a series of *frames* and conditions to define data transfer. The two types of framess are address frames and data frames. How they are used in this project is gone more in-depth in their respective sub-sections. To do the data transfer, the protocol requres two lines; an SCL line and SDA line. The SDA line transfers the sensor data from the MPU to the STM32F0, while the SCL line line ensures that the data is sent while the master's clock is low. The MPU collects or *samples* the data during the rising edge of the master's clock. 
-  * Address Frame:  
-  * Data Frame: 
+  * Address Frame: The address frame is initiated with a start condition which pulls the SDA line low, while keeping the SCL line high. This notifies the MPU (slave) that a transmission is about to begin. After this, the addressing bits of the I2C addresses (7 bits usually) and read/write bit are transmitted. This indicated the addresses that are being accessed, along with a bit that says whether or not the STM32F0 is reading or writing from the MPU. The final bit is the *acknowledgement* (ACK) bit, which allows the MPU to turn the SDA line hihg and wait for more instructions from the STM32F0.
+  * Data Frame: The data frame contains the data based on the number of bytes needed from the MPU. the MPU follows the SCL clock and read/write bit to send data bytes based on the STM32F0's request. After data transfer is complete, the STM32F0 generates a *stop condition* and signals the release of the bus by transitioning the SDA line. 
 
 ### Motor and Analog
 * The motor lab is...
