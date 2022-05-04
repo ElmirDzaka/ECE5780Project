@@ -1,7 +1,7 @@
 # Two-Wheel Balancing Robot (Inverted Pendulum) 
 
 ## Overview
-This Project combines an accelerometer and gyroscope with an STM32 microcontroller to implement an inverted pendulum in the form of a balancing robot. The robot is implemented by taking in accelerometer and gyroscope values continuously based on a sampling rate. The sensor values are generated from an external MPU chip that contains a gyroscope and accelerometer. This chip interfaces with a STM32 microcontroller using I2C protocol. This protocal ensures that values are from the MPU are sent to the at the proper time that the STM32 asks for. 
+This project combines an accelerometer and gyroscope with an STM32 microcontroller to implement an inverted pendulum in the form of a balancing robot. The robot is implemented by taking in accelerometer and gyroscope values continuously based on a sampling rate. The sensor values are generated from an external MPU chip that contains a gyroscope and accelerometer. This chip interfaces with a STM32 microcontroller using I2C protocol. This protocal ensures that values are from the MPU are sent to the at the proper time that the STM32 asks for. 
 
 Once the values are recieved, the STM32 sends the values to a PID class that rotates the motors (wheels) of the robot based on the values from the MPU. The values recieved from the gyroscope determine the angle of the robot while the values recieved from the accelerometer determine the rate of acceeleration of the robot. These values combined help the motors keep the robot stabalized. A diagram showing a brief overview of the project can be seen below. For a more detailed look through the project, check out the Instructions sections for further information.
 
