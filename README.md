@@ -38,27 +38,49 @@ An in-depth instruction guide that follows the construction of the project can b
 
 ### Materials
 
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
-```
+* [Wheels](https://www.amazon.com/dp/B087Q9WM66?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+* [MPU6050 containing gyroscope and accelerometer sensors](https://www.amazon.com/dp/B00LP25V1A?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+* 2x [AC Barrel Jack Adaptor 6V 2A](https://www.amazon.com/dp/B00LU8Z9JI?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+* [Plexiglass Sheets](https://www.amazon.com/dp/B08NPMVJGQ?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+* [Plexiglass Pipes](https://www.amazon.com/dp/B09D7YFSV3?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+* [Saw For Cutting Pipes](https://www.amazon.com/WORX-WORXSAW-4-1-Compact-Circular/dp/B00ZFR4GJE/ref=asc_df_B00ZFR4GJE/?tag=hyprod-20&linkCode=df0&hvadid=309807921328&hvpos=&hvnetw=g&hvrand=12350142610661096784&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9029767&hvtargid=pla-405661640088&th=1)
+* [Superglue For Plexiglass](https://www.amazon.com/Gorilla-105801-Super-1-Pack-Clear/dp/B08QR2XRKD/ref=sr_1_4?crid=D4VF64VD4OOD&keywords=super+glue&qid=1651690474&s=hi&sprefix=super%2Ctools%2C143&sr=1-4)
+* 2x [Pollolu 47:1 Gear Ratio Motor](https://www.pololu.com/product/4885)
+* [Adaptors To Fit Motors Wth 12mm Wheels](https://www.pololu.com/product/2684)
+* [Solder Kit For MPU6050](https://www.amazon.com/Soldering-Iron-Kit-Temperature-Desoldering/dp/B07S61WT16/ref=sr_1_5?crid=VAXD6HT0JNPP&keywords=soldering+iron&qid=1651690658&sprefix=solder%2Caps%2C104&sr=8-5)
+* [Analog Discovery 2](https://www.amazon.com/Digilent-Discovery-Oscilloscope-Analyzer-Variable/dp/B018OPOQOS/ref=asc_df_B018OPOQOS/?tag=hyprod-20&linkCode=df0&hvadid=344057338224&hvpos=&hvnetw=g&hvrand=486485434278545132&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9029767&hvtargid=pla-522977565083&psc=1&tag=&ref=&adgrpid=70729707553&hvpone=&hvptwo=&hvadid=344057338224&hvpos=&hvnetw=g&hvrand=486485434278545132&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9029767&hvtargid=pla-522977565083)
+* [Breadboard(s)](https://www.amazon.com/Breadboards-Solderless-Breadboard-Distribution-Connecting/dp/B07DL13RZH/ref=sr_1_2_sspa?keywords=breadboard&qid=1651690756&s=industrial&sprefix=bread%2Cindustrial%2C102&sr=1-2-spons&psc=1&smid=AX8SR0V05IQ2E&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExTU43QldUR1c2Skk4JmVuY3J5cHRlZElkPUEwOTY0Mjc3M0I0RU8yNlFIS1E1SiZlbmNyeXB0ZWRBZElkPUEwNzgyNTA2Mzk3RkFTTTg1Qk9INSZ3aWRnZXROYW1lPXNwX2F0ZiZhY3Rpb249Y2xpY2tSZWRpcmVjdCZkb05vdExvZ0NsaWNrPXRydWU=)
+* [Jumper Wires For Breadboard](https://www.amazon.com/EDGELEC-Breadboard-Optional-Assorted-Multicolored/dp/B07GD2BWPY/ref=sr_1_1_sspa?crid=JHEAJD2SKMHB&keywords=jumper%2Bwires&qid=1651690789&s=industrial&sprefix=jump%2Cindustrial%2C107&sr=1-1-spons&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExVk9MNjBTVEJQSUhCJmVuY3J5cHRlZElkPUEwMzk2MTU0MzA1MkpaVUlPSEhDUSZlbmNyeXB0ZWRBZElkPUEwOTQ1NDM2MUpBN1RMSkJGREFMWiZ3aWRnZXROYW1lPXNwX2F0ZiZhY3Rpb249Y2xpY2tSZWRpcmVjdCZkb05vdExvZ0NsaWNrPXRydWU&th=1)
 
-### MPU6050
 
-Any advise for common problems or issues.
+### MPU6050 Initialization
+
+The MPU6050 is a 3-axis MPU containing both accelerometer and gyroscope sensors. The values from the sensors are passed to the STM32F0 microcontroller via I2C as described in the I2C section above. Before that can happen, initialization of the MPU6050 is required. To accomplish this, two datasheets need to be examined thoroughly to figure out everything that is needed. The [registers datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) and [device datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf) can be found here. This device is much different to initialize compared to the gyroscope on the STM32F0 board, because the initialization process requires more steps than the gyroscope sensor built-in to the STM32F0. The detailed explanation with code is shown below:
+
+* I2C Initialization
+  * ddd 
+* Reading Who_am_I Address 
+* Waking Up MPU Device
+* Setting Sampling Rate of Device Sensors
+* Initializing Gyroscope and Accelerometer
+
 ```
 command to run if program contains helper info
 ```
 
-### I2C Implementation
+```
+code blocks for commands
+```
+
+### Reading and Sending Sensor Values
+
 
 <img width="300" alt="initialize" src="https://user-images.githubusercontent.com/43626153/166521463-8f9dc8c4-467b-4fcd-9ee5-442a0a43e53b.png">
 <img width="300" alt="read values" src="https://user-images.githubusercontent.com/43626153/166521635-eb9770c8-9775-45fb-9cb3-08797ee0931f.png">
 
 
 
-### Motors
+### Configuring PID For Motors
 
 ### Making Robot Frame
 
