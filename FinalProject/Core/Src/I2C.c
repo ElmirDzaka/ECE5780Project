@@ -421,8 +421,7 @@ void read_gyro(MPU6050_t *mpu_struct){
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); //blue
 	}
 	
-	//delay just in case
-	HAL_Delay(100);
+	
 	
 }
 
@@ -588,6 +587,5 @@ void read_accel(MPU6050_t *mpu_struct){
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET); //blue
 	}
 	
-	//delay just in case
-	HAL_Delay(100);
+
 }

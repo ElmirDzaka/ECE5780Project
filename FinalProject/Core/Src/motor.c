@@ -157,6 +157,9 @@ void PI_update(void) {
      * adc_value -> raw ADC counts to report current
      *
      */
+	
+		motor_speed = (TIM3->CNT - 0x7FFF);
+    TIM3->CNT = 0x7FFF; // Reset back to center point
     
     /// TODO: calculate error signal and write to "error" variable
 		error = target_rpm * 45 - motor_speed;

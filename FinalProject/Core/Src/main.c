@@ -92,23 +92,46 @@ int main(void)
   SystemClock_Config();
 	
 	
-	
+	volatile uint32_t encoder_count = 0;
 	
 	while(1){
 		read_gyro(&MPU6050);
+		
+		//delay just in case
+		HAL_Delay(128);
+		
 		read_accel(&MPU6050);
+		
+		//delay just in case
+		HAL_Delay(128);
+		
+		encoder_count = TIM2->CNT;
+		
+		//delay just in case
+		HAL_Delay(128);
+		
+		
+		
 		
 		if(MPU6050.Gy > 0 && MPU6050.Ay > 0){  //if robot is leaning forward and accelerating, rotate motors backward to correct
 			target_rpm = -50;
+			PI_update();
 		}
 		else if (MPU6050.Gy < 0 && MPU6050.Ay > 0){ //if robot is leaning backwards and accelerrating, rotate motors forward to correct
 			target_rpm = 50;
+			PI_update();
 		}
 		else if (MPU6050.Gy > 0 && MPU6050.Ay < 0){ //if robot is leaning backwards and slowing down, rotate motors backward slowly
 			target_rpm = -25;
+			PI_update();
 		}
 		else if (MPU6050.Gy < 0 && MPU6050.Ay < 0){ //if robot is leaning backwards and slowing down, rotate motors forward slowly
 			target_rpm = 25;
+			PI_update();
+		}
+		else {
+			target_rpm = 40; //just move at 40rpm
+			PI_update();
 		}
 		
 	
