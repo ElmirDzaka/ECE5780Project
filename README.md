@@ -55,18 +55,125 @@ An in-depth instruction guide that follows the construction of the project can b
 
 ### MPU6050 Initialization
 
-The MPU6050 is a 3-axis MPU containing both accelerometer and gyroscope sensors. The values from the sensors are passed to the STM32F0 microcontroller via I2C as described in the I2C section above. Before that can happen, initialization of the MPU6050 is required. To accomplish this, two datasheets need to be examined thoroughly to figure out everything that is needed. The [registers datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) and [device datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf) can be found here. This device is much different to initialize compared to the gyroscope on the STM32F0 board, because the initialization process requires more steps than the gyroscope sensor built-in to the STM32F0. The detailed explanation with code is shown below:
+The MPU6050 is a 3-axis MPU containing both accelerometer and gyroscope sensors. The values from the sensors are passed to the STM32F0 microcontroller via I2C as described in the I2C section above. Before that can happen, initialization of the MPU6050 is required. To accomplish this, two datasheets need to be examined thoroughly to figure out everything that is needed. The [registers datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) and [device datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf) can be found here. The MPU6050 is shown below for reference.
 
-* I2C Initialization
-  * ddd 
-* Reading Who_am_I Address 
-* Waking Up MPU Device
-* Setting Sampling Rate of Device Sensors
-* Initializing Gyroscope and Accelerometer
+![Screenshot 2022-05-05 145914](https://user-images.githubusercontent.com/43626153/167024670-60cd0ab5-df69-4b45-ae00-3a4c6e5a40e9.jpg)
+
+Once recieving the MPU6050, it is required to solder the pins to effectively use the device. The pins can be attatched to a breadboard for easier maniupulation. As seen in the datasheet and picuture, the MPU has a ground and VCC pin that can take in either 3.3V or 5V. Once powered, the MPU will light up a green LED showing that it is working properly. The MPU also has an SDA and SCL pin so that it can be connected to another device, such as the STM32F0. This device is much different to initialize compared to the gyroscope on the STM32F0 board, because the initialization process requires more steps than the gyroscope sensor built-in to the STM32F0. The detailed explanation with code is shown below:
+
+### I2C Initialization
+   We have to start by initializing the I2C protocol on the STM32F0. to do this, we just set the pins and bus timing according to the specfications of the datasheet. The code for setting the protocol with the STM32F0 board used can be seen below:
 
 ```
-command to run if program contains helper info
+//initialize pins
+GPIOB->MODER |= (1<<23) | (1 <<27) | (1<<28) ; //Pin PB11 and PB13 and PB14 (output mode)
+GPIOC->MODER |= (1<<0); //PC0 (output mode)
+GPIOB->OTYPER |= (1<<11) | (1<<13); //open drain PB11 and PB13
+GPIOB->AFR[1] |=  (1<<12)|(1<<20) | (1<<22); //ISC2_SDA
+I2C2 ->TIMINGR |= 0x10420F13; //bus timing 
+I2C2 ->CR1 |= 1; //PE bit
+	
+//initialize PB14 and PC0 to high
+HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14, GPIO_PIN_SET); 
+HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0, GPIO_PIN_SET);
+	
 ```
+
+In the I2C.c file, I also choose to initialize LEDs in this step, but that isn't necessary. LEDs help debug the code to ensure that the values have been sent and recieved properly. This function is critical since it ensures that the the two devices can communicate properly.
+
+### Reading Who_am_I Address
+
+Reading the who_am_I address from the MPU6050 is critical to knowing if the STM32F0 recognizes the device, and that I2C was set up properly. To do this, we just follow the steps that were outlined in the I2C method above. By looking at the I2C registers in the STM32F0 datasheet, we see that control register 2 (CR2) allows for setting the amount of bytes we want going through the data line, as well as setting the address of the "slave" (MPU6050). After that, we have to indicate whether we are reading or writing from the slave address. Lastly, we initiate the I2C transfer by setting the start bit. We need to axess a specifix address in the MPU6050 (who_am_I address), so we need to write to that address first before we check the contents of the address. This similar process is repeated in every function to initiate data transfer. The code for this is seen below: 
+  
+```
+I2C2->CR2 |= (1<<16) | (MPU6050_ADDR << 1); //set NBYTES and Slave Address of MPU6050
+I2C2->CR2 &= ~(0x400); //READ_WRN to write
+I2C2->CR2 |= (1 << 13);	// Start Bit 
+```
+   After the transaction starts, we need to check if either the Transmit Register or Recieve Register is empty depending on if we are reading or writing from the STM32F0. In this case, we need to write to the who_am_I address first, so we will check the transmit register. We also need to check the "slave" not acknowledged register (NACKF) to see if the MPU6050 is still hooked up properly, and to ensure that we are still following I2C protocol. The best way to check is to light up an LED based on which register is triggered at a conditional. The code for that is shown below:
+  
+  ```
+ // Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave NotAcknowledge) flags are set.
+	while(1){
+		if((I2C2->ISR & (1 << 1)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+	}
+	
+	//NACKF flag
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); 
+	}
+ ```
+  If the TXIS register is empty, that means it is ready to write to an address. Now, we look at the STM32F0 datasheet and see that we write to the TXDR register in the STM32F0. This is done with the code below: DISCLAIMER: I defined most registers from the MPU6050 as variables, the respective variables and their addresses can be seen in the I2C.c file.
+ 
+  ```
+//Write the address of the “WHO_AM_I” register into the I2C transmit register. (TXDR)
+	I2C2->TXDR = WHO_AM_I_REG; 
+ ```
+  Now, the two devices have to wait until data transfer is complete, and once it is, we can check if the transfer complete (TC) register. This register will be set high once the transfer is complete. The code for that is seen below:
+ 
+```
+ //Wait until the TC (Transfer Complete) flag is set
+ while(1){
+	 if((I2C2->ISR & (1 << 6))){
+			break; 
+	 }
+		
+ }
+ ```
+  Now that we are at the address we want (who_am_I address), we can check the contents to see if they match the contents listed in the MPU6050 product datasheet. We can do this by initiating a read operation for the STM32F0. We initiate a transfer much like the write operation above, but we select a read operation instead. This is seen below:
+ 
+```
+// Reload the CR2 register with the same parameters as before, but set the RD_WRN bit to
+// indicate a read operation.
+I2C2->CR2 |= (1 << 16) | (MPU6050_ADDR << 1) | (1 << 10);		
+I2C2->CR2 |= (1<<10); //read	
+I2C2->CR2 |= (1 << 13); // Start Bit
+```
+ Now, all we do is check the receive register and wait until data transfer (TC) is complete before reading the results. Unlike writing, we have to wait for data to be fully read before doing an action, while writing requires doing an action and then waiting for the TC register. After that, we check to see if the contents match the content value listed in the who_am_I register in the datasheet. After we are done with this function, we have to set the STOP bit to ensure the I2C bus is released for another operation. The code is shown below:
+ 
+ ```
+// Reload the CR2 register with the same parameters as before, but set the RD_WRN bit to
+  // indicate a read operation.
+	I2C2->CR2 |= (1 << 16) | (MPU6050_ADDR << 1) | (1 << 10);		
+	I2C2->CR2 |= (1<<10); //read	
+	I2C2->CR2 |= (1 << 13); // Start Bit
+	
+	// Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave NotAcknowledge) flags are set.
+	while (1)
+  {
+		if((I2C2->ISR & (1 << 2)) | (I2C2->ISR & (1 << 4))){
+			break; 
+		}
+  }
+	
+	if(I2C2->ISR & (1 << 4)){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); //error
+	}
+	
+	//Wait until the TC (Transfer Complete) flag is set
+	while(1){
+		if((I2C2->ISR & (1 << 6))){
+			break; 
+		}
+	}
+	
+	// Check the contents of the RXDR register to see if it matches 0x68. (expected value of the “WHO_AM_I” register)
+	if(I2C2->RXDR == 0x68){
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); //works
+	}
+	
+	// Set the STOP bit in the CR2 register to release the I2C bus
+	I2C2-> CR2 |= (1 << 14);
+```
+ 
+  
+### Waking Up MPU Device
+### Setting Sampling Rate of Device Sensors
+### Initializing Gyroscope and Accelerometer
+
+
 
 ```
 code blocks for commands
