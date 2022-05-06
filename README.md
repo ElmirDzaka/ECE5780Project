@@ -231,6 +231,7 @@ To make the robot frame, I took two plexiglass sheets and combined them with som
 ### Combining Components Together
 Now that we have all the components, we just have to combine everything together in the robot frame. This is shown below:
 
+![20220506_141354](https://user-images.githubusercontent.com/43626153/167211770-8fd168cb-72f6-4d3b-a750-a834de9f32a2.jpg)
 
 
 ## Milestones
