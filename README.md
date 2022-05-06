@@ -5,7 +5,8 @@ This project combines an accelerometer and gyroscope with an STM32 microcontroll
 
 Once the values are recieved, the STM32 sends the values to a PID class that rotates the motors (wheels) of the robot based on the values from the MPU. The values recieved from the gyroscope determine the angle of the robot while the values recieved from the accelerometer determine the rate of acceeleration of the robot. These values combined help the motors keep the robot stabalized. A diagram showing a brief overview of the project can be seen below. For a more detailed look through the project, check out the Instructions sections for further information.
 
-//diagram here
+![Untitled Diagram](https://user-images.githubusercontent.com/43626153/167053486-d257b65b-d967-466e-b543-58ae367a4a35.jpg)
+
 
 ## Purpose
 The purpose of the project is to learn how to use I2C and PIDs by integrating an external MPU chip containing a gyroscope and accelerometer sensor. Learning I2C protocol is done by interfacing an external MPU containing two sensors with an STM32F0 microcontroller. Learning PIDs is done by learning PID and ADC logic so that it can be adapted for this project. combining these learning objectives together allows for the construction of a balancing robot if implemented correctly.
@@ -26,8 +27,11 @@ The functionality of the robot is a bit awkward with the materials used in this 
   * Data Frame: The data frame contains the data based on the number of bytes needed from the MPU. the MPU follows the SCL clock and read/write bit to send data bytes based on the STM32F0's request. After data transfer is complete, the STM32F0 generates a *stop condition* and signals the release of the bus by transitioning the SDA line. 
 
 ### Motor and Analog
-* The motor lab is...
-* The motor lab includes the analog lab since it uses an ADC (Analog to Digital Converter)...  
+ The motor code that is includes uses PID logic to set a target rpm to the motors, and allow the motors to the rpm in the correct fashion. The PID math can be explained with youtube videos if needed. To do this, the code follows a closed-loop control process as shown in the image below:
+
+![Screenshot 2022-05-05 195531](https://user-images.githubusercontent.com/43626153/167054186-848e424c-fd5f-4280-8773-a9c9a22d138a.jpg)
+
+For this project, the control will onlly include a PI system since a derivative isn't needed for our needs. To do a PI control loop, we need to know how to do Discrete-Time control. These time systems operate on periodic intervals and involve concepts such as quantization for sampling rates. This is what makes this include Analog. The PI system periodically samples the input values and calculates a result based of those inputs. This updates the output accordingly. This is done more specifically in our Integral since an integral is just an area under a curve. If we want to see a nice curve when we input a value (i.e setting a target_rpm value and getting to that value at a nice rate), then we need to do some quantization. To do this, you can look into what a discrete first-order integral with quantization does. Once all that is done, we calulate the the error and clamp the values so that they can't go over a specification such as the max speed of a motor. 
 
 
 
@@ -196,7 +200,7 @@ mpu_struct ->Accel_Y = (int16_t)(data[0] << 8 | data[1]);
 mpu_struct->Ay = mpu_struct->Accel_Y / 16384.0;
 ```
 
-To read the data, we need to call these functions in the infinite while loop in the main.c function so that we continuously keep generating data. Once we do that, we can see something like the blow image in our AD2 device.
+To read the data, we need to call these functions in the infinite while loop in the main.c function so that we continuously keep generating data. Once we do that, we can see something like the below image in our AD2 device.
 
 <img width="300" alt="read values" src="https://user-images.githubusercontent.com/43626153/166521635-eb9770c8-9775-45fb-9cb3-08797ee0931f.png">
 
