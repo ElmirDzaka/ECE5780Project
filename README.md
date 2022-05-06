@@ -13,7 +13,7 @@ The purpose of the project is to learn how to use I2C and PIDs by integrating an
 
 ## Functionality
 
-The functionality of the robot is a bit awkward with the materials used in this project. In it's current state, the robot takes in values from an MPU that sits on a balanced frame. Once moving, the robot tries to stay balanced as it is moving forward. With the given materials, there is a small limitation to the robot. This project uses two custom motor drivers that were designed for an encoded Pollolu Motor. The motor drivers take in a wired barrel connection from an AC adapter, limiting the robot to a wired connection. If you are interested in designing this robot with a wireless/barrel-less power connection (power from STM32F0, AD2, etc via breadboard), then consider using a standard L298N motor driver [such as this one](https://www.amazon.com/Qunqi-Controller-Module-Stepper-Arduino/dp/B014KMHSW6/ref=asc_df_B014KMHSW6/?tag=hyprod-20&linkCode=df0&hvadid=167139094796&hvpos=&hvnetw=g&hvrand=3649658821866149140&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9029767&hvtargid=pla-306436938191&psc=1). This motor driver can be wired via breadboard, minimizing wires and clutter, as well as having the capability of connecting with other motors. More ideas can be found in the Additional Ideas section.
+The functionality of the robot is a bit awkward with the materials used in this project. In it's current state, the robot takes in values from an MPU that sits on a balanced frame. Once moving, the robot tries to stay balanced as it is moving forward. With the given materials, there is a small limitation to the robot. This project uses two custom motor drivers that were designed for an encoded Pollolu Motor. The motor drivers take in a wired barrel connection from an AC adapter, limiting the robot to a wired connection. If you are interested in designing this robot with a wireless/barrel-less power connection (power from STM32F0, AD2, etc via breadboard), then consider using a standard L298N motor driver [such as this one](https://www.amazon.com/Qunqi-Controller-Module-Stepper-Arduino/dp/B014KMHSW6/ref=asc_df_B014KMHSW6/?tag=hyprod-20&linkCode=df0&hvadid=167139094796&hvpos=&hvnetw=g&hvrand=3649658821866149140&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9029767&hvtargid=pla-306436938191&psc=1). This motor driver can be wired via breadboard, minimizing wires and clutter, as well as having the capability of connecting with other motors. 
 
 
 ## Base Requirements Implemented
@@ -32,6 +32,8 @@ The functionality of the robot is a bit awkward with the materials used in this 
 ![Screenshot 2022-05-05 195531](https://user-images.githubusercontent.com/43626153/167054186-848e424c-fd5f-4280-8773-a9c9a22d138a.jpg)
 
 For this project, the control will onlly include a PI system since a derivative isn't needed for our needs. To do a PI control loop, we need to know how to do Discrete-Time control. These time systems operate on periodic intervals and involve concepts such as quantization for sampling rates. This is what makes this include Analog. The PI system periodically samples the input values and calculates a result based of those inputs. This updates the output accordingly. This is done more specifically in our Integral since an integral is just an area under a curve. If we want to see a nice curve when we input a value (i.e setting a target_rpm value and getting to that value at a nice rate), then we need to do some quantization. To do this, you can look into what a discrete first-order integral with quantization does. Once all that is done, we calulate the the error and clamp the values so that they can't go over a specification such as the max speed of a motor. 
+
+We also need an ADC (Analog to Digital Converter) to continuasely monitor the current that is passed to the motor drivers via the current sensor pin. The in_depth description can be found in the ADC_init function in the motor.c file.
 
 
 
@@ -207,15 +209,33 @@ To read the data, we need to call these functions in the infinite while loop in 
 
 
 ### Configuring PID For Motors
+Now that we have the values being generated from the MPU6050 and read by the STM32F0, we need to pass these values to the motor.cfile. This file uses the PID math logic that was described in the Motor section above. As linked in the matrials section, I am using a 47:1 gearbox Pollolu motor. This motor has about 2286 counts per revolution. Knowing this information, we can calculate the sampling rate of the motor using the following formula: 
 
+```
+Line Count = Encoder Counts per Revolution/ Gear Ration
+
+Sampling Rate = 60/(Max_RPM * Line Count)
+
+Sampling Rate = (60/(Gear Ratio * Max_RPM * CPR)) * x       //where x = error multiplier
+
+```
+
+From the math above, I calculated my error multiplier to be 45.1. For an in-depth view on how the PI system works together, there is an in-depth description in the motor.c file. From here I clamped the values to ensure that the motor doesn't exceed its max rpm, or go below 0. To test this, I used STMStudio which alloweed me to changed the gain of the proportion and the integral, as well as the target rpm. STMStudio also gave a visual to show how the rpm changed in real-time. Upon changing the gains to 1, and a target_rpm of 40, the motor spun as expected.
 
 ### Making Robot Frame
+To make the robot frame, I took two plexiglass sheets and combined them with some plexiglass pipes. The pipes that I got came in a pack of two, so I decided to cut the pipes in half symmetrically. All measurements and cuts had to be precise to ensure that the robot is balanced in its rest state. To place the pipes onto the plexiglass, I meaasured a square inch away from each corner and placed the pipes there. I used superglue to put assemble the frame together. The picture of the final frame can be seen below:
+
+
+![20220503_190918](https://user-images.githubusercontent.com/43626153/167199879-a38c92ba-975f-4f43-830d-2a8c8286e2f8.jpg)
 
 ### Combining Components Together
+Now that we have all the components, we just have to combine everything together in the robot frame. This is shown below:
+
+
 
 ## Milestones
 
-Explain how it was changed during the modeling process of the project
+This project went through a rigorous modeling process, but eventually the following milestones were determened and implemented. 
 
 * Milestone 1: Getting Who_am_I from MPU6050
 * Milestone 2: Read Values from MPU6050
@@ -224,10 +244,9 @@ Explain how it was changed during the modeling process of the project
 
 ## Author
 
-Elmir Dzaka: (Linkedin?)
-
-## Additional Ideas 
-
+Elmir Dzaka: [LinkedIn](https://www.linkedin.com/in/elmir-dzaka-256b5b182/)
+ 
 
 
 ## Acknowledgments
+The author would like to thank Professor PE, Ashton, and Sumanth for guiding and teaching me all the skills used in this project. 
