@@ -168,26 +168,42 @@ I2C2->CR2 |= (1 << 13); // Start Bit
 	I2C2-> CR2 |= (1 << 14);
 ```
  
+  For the rest of the instructions, the I2C protocol won't be gone in depth as it was in the who_am_I section since it all follows the same protocol. 
   
 ### Waking Up MPU Device
+When looking at the MPU6050 product datasheet, it says that the MPU6050 requires setting some bits in the PWR_MGMT register to "wake up" the sensors. These bits will enable the internal clock of the device. Once we write to this register, we need to write some bits inside the register to set up the internal clock to 8 Mhz. The process is very similar to the code above, and the full code can be seen in the "wake_up_mpu" function in the I2C.c file. 
+
 ### Setting Sampling Rate of Device Sensors
+Next, the sampling rate of the sensors needs to be set. The sampling rate determines how often the sensors from the MPU collect data. In this case, this involes the gyroscope and accelerometer sensors. Since I decided to use an 8Mhz clock, I want to sample at a rate of about 1kHz. This is because the math is pretty easy. According to the device datasheet, we write an 0x07 to divide by 8, giving us a 1kHZ sampling rate. A more detailed explanation can be found on the register datasheet for the MPU6050.
+
 ### Initializing Gyroscope and Accelerometer
+Before data values can be read, the gyroscope and accelerometer sensors need to be initialized. To do this, we need to write to either the GYRO_CONFIG register or the ACCEL_CONFIG register in their respective functions. The datasheet for the MPU6050 registers says that writing to each of these registers enables the sensors. After that, we need to write a value into the sensors to configure the type of output the sensor outputs. The datasheet goes into detail as to what each mode means. For this project, I decided to get raw values of +-250 degrees/s for the gyroscope and +-2g for the accelerometer. This was accomplished by writing a 0 into both registers. These values are just the "raw" values that the sensors generate. To get readable values, we need to do some math to change the values. This is done when readingthe values.
 
 
-
-```
-code blocks for commands
-```
 
 ### Reading and Sending Sensor Values
-
+Now that the initialization of the MPU6050 is done, the values can now be read. To check if the initialization worked, we can use an Analog Discovery 2 kit to connect the SCL and SDA lines from the STM32F0 to the AD2 (Important: we still need the SCL and SDA lines connected to the MPU6050, luckily the STM32F0 can connect two wires to the same pin). In the AD2, we can provide the MPU6050 with power using the "Supplies" setting, and we can check the data being received and sent using the "Protocol" section. In the Supplies section, we just want a positive supply of 3.3 volts. In the Protocol section, we want to change the protocol to I2C and set the DIO pins accordingly. Once everything is set properly, the values should look something like the image below (click image to enlarge): 
 
 <img width="300" alt="initialize" src="https://user-images.githubusercontent.com/43626153/166521463-8f9dc8c4-467b-4fcd-9ee5-442a0a43e53b.png">
+
+From here, we can start looking at the "read_gyro" and "read_accel" functions in the I2C.c file. To store the values from this function, I decided to make a struct in the I2C.h header file that stores the values generated from the sensors. The struct allows the main.c file to access the struct once it's declared, and read the values accordingly from the struct. Before that can be done, the functions have to be implemented first. To read the sensor values, we need to go to either the ACCEL_YOUT_H_REG or the  GYRO_YOUT_H_REG depending on the function. The sensors are configered to generate a 16-bit value, but since a register can only store a byte, the MPU6050 stores two registers for sensor data; the high register and the low register. The high register stores the high bits and vice versa. We need to start at the high register since it comes before the low register. If we set the I2C protocol to read 2 bytes (which we do), then the next byte it reads is the low register. full register information is found in the respective registers in the MPU6050 register datasheet. From here, we need to store the values in the struct to pass along to the main.c function. before we do that, we need to generate the interpreted value from the raw value. For our values, the datasheet says we need to divide the raw value by 131 for gyro and 16384 for accel. The code for passing the values into the struct can be seen below.
+
+```
+//combine high bits and low bits of accel H/L registers to get full value
+mpu_struct ->Accel_Y = (int16_t)(data[0] << 8 | data[1]);
+	
+//convert accel since sensitivity is 16384 LSB/g
+mpu_struct->Ay = mpu_struct->Accel_Y / 16384.0;
+```
+
+To read the data, we need to call these functions in the infinite while loop in the main.c function so that we continuously keep generating data. Once we do that, we can see something like the blow image in our AD2 device.
+
 <img width="300" alt="read values" src="https://user-images.githubusercontent.com/43626153/166521635-eb9770c8-9775-45fb-9cb3-08797ee0931f.png">
 
 
 
 ### Configuring PID For Motors
+
 
 ### Making Robot Frame
 
